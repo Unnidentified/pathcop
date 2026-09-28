@@ -5,7 +5,7 @@ Works on all files, folders, and desktop. Multi-selection is also supported.
 
 ### Installation
 
-1. [Download the DMG installer for pathcop](https://github.com/Unnidentified/pathcop/releases/download/v1.0/pathcop-1.0.dmg)
+1. [Download the DMG installer for pathcop](https://github.com/Unnidentified/pathcop/releases/download/1.0/pathcop-1.0.dmg)
 2. Drag `pathcop.app` to `/Applications`
 3. Launch it for the first time
 4. Go to **System Settings** → **General** → **Login Items & Extensions** → **Finder Extensions**
