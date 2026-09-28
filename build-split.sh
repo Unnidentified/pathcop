@@ -16,21 +16,11 @@ build_one() {
   rm -rf "build-${ARCH}" "${OUT}"
   mkdir -p "build-${ARCH}" "build-${ARCH}/src"
 
-  # Workaround without touching the user's sources: the checked-in
-  # main.swift targets a newer SDK, so patch the availability guards
-  # for the macOS 11 build copies.
+  # main.swift already gates SMAppService behind #available with
+  # @available helpers, which type-checks clean on the macOS 11 target,
+  # so copy sources unpatched.
   cp Sources/Ext/FinderSync.swift "build-${ARCH}/src/"
-  python3 - "build-${ARCH}/src/main.swift" Sources/App/main.swift <<'PYEOF'
-import sys
-out_path, in_path = sys.argv[1], sys.argv[2]
-text = open(in_path).read()
-text = text.replace(
-    'if #available(macOS 13.0, *) {',
-    'if #unavailable(macOS 13.0) {',
-    1,  # isLoginItem only
-)
-open(out_path, 'w').write(text)
-PYEOF
+  cp Sources/App/main.swift "build-${ARCH}/src/main.swift"
 
   swiftc -target "$TARGET" -sdk "$SDK" -O -parse-as-library -module-name pathcopExtension \
     -emit-object -o "build-${ARCH}/FinderSync.o" \

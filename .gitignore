@@ -1,5 +1,9 @@
 build/
+build-arm64/
+build-x86_64/
 pathcop.app/
+pathcop-arm.app/
+pathcop-intel.app/
 CopyPath.app/
 *.dmg
 .DS_Store

@@ -141,17 +141,28 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     }
 
     func isLoginItem() -> Bool {
-        if #unavailable(macOS 13.0) {
+        if #available(macOS 13.0, *) {
+            return modernLoginEnabled()
+        } else {
             return legacyLoginItemEnabled()
         }
-        return SMAppService.mainApp.status == .enabled
     }
 
     func setLoginItem(_ enabled: Bool) {
-        if #unavailable(macOS 13.0) {
+        if #available(macOS 13.0, *) {
+            modernSetLogin(enabled: enabled)
+        } else {
             setLegacyLoginItem(enabled)
-            return
         }
+    }
+
+    @available(macOS 13.0, *)
+    private func modernLoginEnabled() -> Bool {
+        SMAppService.mainApp.status == .enabled
+    }
+
+    @available(macOS 13.0, *)
+    private func modernSetLogin(enabled: Bool) {
         do {
             if enabled {
                 try SMAppService.mainApp.register()
