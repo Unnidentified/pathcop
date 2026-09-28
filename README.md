@@ -4,8 +4,8 @@ Adds two menus when right-clicking: **Copy Path** and **Copy Tree**.
 Works on all files, folders, and desktop. Multi-selection is also supported.
 
 Minimum requirements (for latest versions): <br>
--pathcop-1.1-arm64.dmg (1.1M, arm64, macOS 11.0+, verified) <br>
--pathcop-1.1-intel.dmg (1.2M, x86_64, macOS 11.0+, verified)
+-pathcop-1.1-arm64.dmg (1.1M, arm64, macOS 11.0+) <br>
+-pathcop-1.1-intel.dmg (1.2M, x86_64, macOS 11.0+)
 
 ### Installation
 
