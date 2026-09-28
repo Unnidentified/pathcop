@@ -34,16 +34,32 @@ class FinderSync: FIFinderSync {
     private func menuIcon(_ name: String) -> NSImage? {
         // Template icons tint to the menu highlight, which washes
         // them out. Plain white stays readable in both modes.
+        // All icons are centered on one shared canvas, so a wide glyph
+        // like textformat ("Aa") renders at the same width as the rest.
         guard let icon = NSImage(systemSymbolName: name, accessibilityDescription: nil) else { return nil }
         icon.isTemplate = false
-        if let tinted = icon.copy() as? NSImage {
-            tinted.lockFocus()
+        let canvas = NSSize(width: 16, height: 16)
+        let out = NSImage(size: canvas)
+        out.lockFocus()
+        let targetH = min(icon.size.height, canvas.height)
+        let scale = targetH / max(icon.size.height, 0.01)
+        let iw = min(icon.size.width * scale, canvas.width)
+        let ih = targetH
+        let origin = NSPoint(x: (canvas.width - iw) / 2, y: (canvas.height - ih) / 2)
+        icon.draw(in: NSRect(origin: origin, size: NSSize(width: iw, height: ih)),
+                  from: NSRect(origin: .zero, size: icon.size),
+                  operation: .sourceOver, fraction: 1.0)
+        out.unlockFocus()
+        out.isTemplate = false
+        if let white = out.copy() as? NSImage {
+            white.lockFocus()
             NSColor.white.set()
-            NSRect(origin: .zero, size: tinted.size).fill(using: .sourceAtop)
-            tinted.unlockFocus()
-            return tinted
+            NSRect(origin: .zero, size: canvas).fill(using: .sourceAtop)
+            white.unlockFocus()
+            white.isTemplate = false
+            return white
         }
-        return icon
+        return out
     }
 
     override init() {
