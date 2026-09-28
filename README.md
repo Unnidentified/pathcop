@@ -1,4 +1,4 @@
-# <img src="icon.png" width="65" height="65" align="absmiddle" alt="pathcop icon" /> pathcop
+# <img src="icon.png" width="85" height="85" align="absmiddle" alt="pathcop icon" /> pathcop
 
 Adds two menus when right-clicking: **Copy Path** and **Copy Tree**.  
 Works on all files, folders, and desktop. Multi-selection is also supported.
