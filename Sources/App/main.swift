@@ -11,6 +11,9 @@ let prefsURL = prefsDir.appendingPathComponent("prefs.json")
 struct Prefs: Codable {
     var copyPath: Bool = true
     var copyTree: Bool = true
+    var copyContents: Bool = true
+    var copyFilename: Bool = true
+    var filenameKeepExtension: Bool = true
 }
 
 func loadPrefs() -> Prefs {
@@ -71,7 +74,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             NSApp.activate(ignoringOtherApps: true)
             return
         }
-        let w = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 320, height: 275),
+        let w = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 320, height: 360),
                          styleMask: [.titled, .closable, .miniaturizable],
                          backing: .buffered, defer: false)
         w.title = "pathcop"
@@ -83,25 +86,43 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
         let title = NSTextField(labelWithString: "Finder menu items")
         title.font = .boldSystemFont(ofSize: 13)
-        title.frame = NSRect(x: 20, y: 225, width: 280, height: 20)
+        title.frame = NSRect(x: 20, y: 310, width: 280, height: 20)
         w.contentView?.addSubview(title)
 
         let cp = NSButton(checkboxWithTitle: "Copy Path", target: self, action: #selector(toggled(_:)))
-        cp.frame = NSRect(x: 20, y: 195, width: 280, height: 20)
+        cp.frame = NSRect(x: 20, y: 280, width: 280, height: 20)
         cp.state = prefs.copyPath ? .on : .off
         cp.identifier = NSUserInterfaceItemIdentifier("copyPath")
         w.contentView?.addSubview(cp)
 
         let ct = NSButton(checkboxWithTitle: "Copy Tree", target: self, action: #selector(toggled(_:)))
-        ct.frame = NSRect(x: 20, y: 170, width: 280, height: 20)
+        ct.frame = NSRect(x: 20, y: 258, width: 280, height: 20)
         ct.state = prefs.copyTree ? .on : .off
         ct.identifier = NSUserInterfaceItemIdentifier("copyTree")
         w.contentView?.addSubview(ct)
 
+        let cc = NSButton(checkboxWithTitle: "Copy Contents", target: self, action: #selector(toggled(_:)))
+        cc.frame = NSRect(x: 20, y: 236, width: 280, height: 20)
+        cc.state = prefs.copyContents ? .on : .off
+        cc.identifier = NSUserInterfaceItemIdentifier("copyContents")
+        w.contentView?.addSubview(cc)
+
+        let cf = NSButton(checkboxWithTitle: "Copy Filename", target: self, action: #selector(toggled(_:)))
+        cf.frame = NSRect(x: 20, y: 214, width: 280, height: 20)
+        cf.state = prefs.copyFilename ? .on : .off
+        cf.identifier = NSUserInterfaceItemIdentifier("copyFilename")
+        w.contentView?.addSubview(cf)
+
         let login = NSButton(checkboxWithTitle: "Start on login", target: self, action: #selector(toggledLogin(_:)))
-        login.frame = NSRect(x: 20, y: 145, width: 280, height: 20)
+        login.frame = NSRect(x: 20, y: 170, width: 280, height: 20)
         login.state = isLoginItem() ? .on : .off
         w.contentView?.addSubview(login)
+
+        let ext = NSButton(checkboxWithTitle: "Filenames keep extension", target: self, action: #selector(toggled(_:)))
+        ext.frame = NSRect(x: 40, y: 148, width: 260, height: 20)
+        ext.state = prefs.filenameKeepExtension ? .on : .off
+        ext.identifier = NSUserInterfaceItemIdentifier("filenameKeepExtension")
+        w.contentView?.addSubview(ext)
 
         let hint = NSTextField(wrappingLabelWithString: "Right-click anywhere in Finder. Enable pathcop first under System Settings > General > Login Items & Extensions > Finder Extensions.")
         hint.frame = NSRect(x: 20, y: 55, width: 280, height: 80)
@@ -120,10 +141,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     }
 
     func isLoginItem() -> Bool {
-        SMAppService.mainApp.status == .enabled
+        if #unavailable(macOS 13.0) {
+            return legacyLoginItemEnabled()
+        }
+        return SMAppService.mainApp.status == .enabled
     }
 
     func setLoginItem(_ enabled: Bool) {
+        if #unavailable(macOS 13.0) {
+            setLegacyLoginItem(enabled)
+            return
+        }
         do {
             if enabled {
                 try SMAppService.mainApp.register()
@@ -135,6 +163,45 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         }
     }
 
+    // macOS 11/12 fallback: LSSharedFileList login items.
+    private func loginItemsList() -> LSSharedFileList? {
+        LSSharedFileListCreate(nil, kLSSharedFileListSessionLoginItems.takeRetainedValue(), nil)?.takeRetainedValue()
+    }
+
+    private func legacyLoginItemEnabled() -> Bool {
+        guard let list = loginItemsList() else { return false }
+        let items = LSSharedFileListCopySnapshot(list, nil)?.takeRetainedValue() as? [LSSharedFileListItem] ?? []
+        let appURL = Bundle.main.bundleURL as URL
+        for item in items {
+            var resolved: Unmanaged<CFURL>?
+            if LSSharedFileListItemResolve(item, 0, &resolved, nil) == noErr,
+               let url = resolved?.takeRetainedValue() as URL?,
+               url == appURL {
+                return true
+            }
+        }
+        return false
+    }
+
+    private func setLegacyLoginItem(_ enabled: Bool) {
+        guard let list = loginItemsList() else { NSSound.beep(); return }
+        let appURL = Bundle.main.bundleURL as CFURL
+        if enabled {
+            LSSharedFileListInsertItemURL(list, kLSSharedFileListItemBeforeFirst.takeRetainedValue(), nil, nil, appURL, nil, nil)
+        } else {
+            let items = LSSharedFileListCopySnapshot(list, nil)?.takeRetainedValue() as? [LSSharedFileListItem] ?? []
+            let target = Bundle.main.bundleURL
+            for item in items {
+                var resolved: Unmanaged<CFURL>?
+                if LSSharedFileListItemResolve(item, 0, &resolved, nil) == noErr,
+                   let url = resolved?.takeRetainedValue() as URL?,
+                   url == target {
+                    LSSharedFileListItemRemove(list, item)
+                }
+            }
+        }
+    }
+
     @objc func toggledLogin(_ sender: NSButton) {
         setLoginItem(sender.state == .on)
         // Reflect reality in case registration failed.
@@ -143,10 +210,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
     @objc func toggled(_ sender: NSButton) {
         var prefs = loadPrefs()
-        if sender.identifier?.rawValue == "copyPath" {
-            prefs.copyPath = sender.state == .on
-        } else {
-            prefs.copyTree = sender.state == .on
+        switch sender.identifier?.rawValue {
+        case "copyPath": prefs.copyPath = sender.state == .on
+        case "copyTree": prefs.copyTree = sender.state == .on
+        case "copyContents": prefs.copyContents = sender.state == .on
+        case "copyFilename": prefs.copyFilename = sender.state == .on
+        case "filenameKeepExtension": prefs.filenameKeepExtension = sender.state == .on
+        default: break
         }
         savePrefs(prefs)
     }
