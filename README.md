@@ -11,7 +11,7 @@ Minimum requirements (for latest versions): <br>
 
 1. [download the arm64 DMG installer for pathcop](https://github.com/Unnidentified/pathcop/releases/download/1.2/pathcop-1.2-arm64.dmg) / [download the intel DMG installer](https://github.com/Unnidentified/pathcop/releases/download/1.2/pathcop-1.2-intel.dmg)
 2. drag `pathcop.app` to `/Applications`
-3. run `"xattr -cr /Applications/pathcop.app"` in `terminal.app`, because I don't pay apple 100 bucks a year
+3. run `"xattr -cr /Applications/pathcop.app"` in `terminal.app`, (I don't pay apple 100 bucks a year)
 5. launch it for the first time
 6. go to **System Settings** → **General** → **Login Items & Extensions** → **Finder Extensions**
 7. toggle on **pathcop**
