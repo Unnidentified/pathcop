@@ -4,12 +4,12 @@ Adds two menus when right-clicking: **Copy Path** and **Copy Tree**.
 Works on all files, folders, and desktop. Multi-selection is also supported.
 
 Minimum requirements (for latest versions): <br>
--pathcop-1.1-arm64.dmg (1.1M, arm64, macOS 11.0+) <br>
--pathcop-1.1-intel.dmg (1.2M, x86_64, macOS 11.0+)
+-pathcop-1.2-arm64.dmg (1.1M, arm64, macOS 11.0+) <br>
+-pathcop-1.2-intel.dmg (1.16M, x86_64, macOS 11.0+)
 
 ### Installation
 
-1. [download the arm64 DMG installer for pathcop](https://github.com/Unnidentified/pathcop/releases/download/1.1/pathcop-1.1-arm64.dmg) / [download the intel DMG installer](https://github.com/Unnidentified/pathcop/releases/download/1.1/pathcop-1.1-intel.dmg)
+1. [download the arm64 DMG installer for pathcop](https://github.com/Unnidentified/pathcop/releases/download/1.2/pathcop-1.2-arm64.dmg) / [download the intel DMG installer](https://github.com/Unnidentified/pathcop/releases/download/1.2/pathcop-1.2-intel.dmg)
 2. drag `pathcop.app` to `/Applications`
 3. run `"xattr -cr /Applications/pathop.app"` in `terminal.app`, because I don't pay apple 100 bucks a year
 5. launch it for the first time
