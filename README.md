@@ -23,17 +23,3 @@ Minimum requirements (for latest versions): <br>
 That's it! Happy frenetic-right-clicking-anything-and-copying-lotsofpaths.
 
 > wait, wut?
-
-### Changelog
-
-**1.3**
-- The Finder menu now appears inside external volumes (external drives, USB sticks, SD cards, disk images, network shares), not just the startup disk. Plugging a drive in or out updates it live, no relaunch needed.
-
-**1.2**
-- Added **Copy Contents** and **Copy Filename**.
-
-**1.1**
-- Split arm64 / intel builds, macOS 11.0 floor.
-
-**1.0**
-- First release.
