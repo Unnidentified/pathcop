@@ -62,13 +62,90 @@ class FinderSync: FIFinderSync {
         return out
     }
 
+    // Finder only asks an extension for a menu when the clicked item lives
+    // under one of the registered directoryURLs. Registering "/" covers the
+    // boot volume and nothing else: a mounted drive in /Volumes is its own
+    // filesystem root, not a descendant of "/", so external disks, SD cards,
+    // USB sticks and network shares used to get no menu at all. So register
+    // every mounted volume, and keep the list current as drives come and go.
+    private var volumeObservers: [NSObjectProtocol] = []
+    private var lastVolumeRefresh = Date.distantPast
+
     override init() {
         super.init()
-        // Watch everywhere: Desktop, any folder, any Finder window.
-        FIFinderSyncController.default().directoryURLs = [URL(fileURLWithPath: "/")]
+        // Watch everywhere: Desktop, any folder, any Finder window, any disk.
+        refreshDirectoryURLs()
+
+        let center = NSWorkspace.shared.notificationCenter
+        for name in [NSWorkspace.didMountNotification,
+                     NSWorkspace.didUnmountNotification,
+                     NSWorkspace.didRenameVolumeNotification] {
+            let token = center.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
+                guard let self = self else { return }
+                self.refreshDirectoryURLs()
+            }
+            volumeObservers.append(token)
+        }
+    }
+
+    deinit {
+        let center = NSWorkspace.shared.notificationCenter
+        for token in volumeObservers { center.removeObserver(token) }
+    }
+
+    // "/Volumes/X/" and "/Volumes/X" are the same volume. Without trimming the
+    // trailing slash the change check below sees a difference every time and
+    // re-registers on every right-click.
+    private func normalized(_ path: String) -> String {
+        var p = path
+        while p.count > 1 && p.hasSuffix("/") { p.removeLast() }
+        return p
+    }
+
+    // Boot volume plus every mounted volume, as normalized paths.
+    // mountedVolumeURLs is backed by getmntinfo, so it already sees external
+    // disks, disk images, network shares and FUSE mounts. Hidden volumes are
+    // included on purpose: some drives and disk images mount hidden/nobrowse,
+    // and a redundant registration costs nothing next to a missing menu.
+    // Deliberately no per-volume stat() and no symlink resolution here: this
+    // runs on the right-click path, and a stalled share would hang the menu.
+    private func desiredDirectoryURLs() -> Set<String> {
+        var paths: Set<String> = ["/"]
+        for url in FileManager.default.mountedVolumeURLs(
+            includingResourceValuesForKeys: nil,
+            options: []) ?? [] {
+            paths.insert(normalized(url.path))
+        }
+        return paths
+    }
+
+    private func refreshDirectoryURLs() {
+        lastVolumeRefresh = Date()
+        let controller = FIFinderSyncController.default()
+        let wanted = desiredDirectoryURLs()
+        // Compare by normalized path, not by URL object, so the same volume
+        // reported with a trailing slash doesn't look like a change.
+        let current = Set(controller.directoryURLs.map { normalized($0.path) })
+        // Only reassign when it actually changed; re-registering for no reason
+        // makes Finder do work on every single right-click.
+        if current != wanted {
+            controller.directoryURLs = Set(wanted.map { URL(fileURLWithPath: $0) })
+        }
+    }
+
+    // Safety net for the mount notification that never arrived (drive was
+    // already plugged in before the extension was launched, or it was missed
+    // while the extension was asleep). Throttled so it's near-free per click.
+    private func refreshDirectoryURLsIfStale() {
+        guard Date().timeIntervalSince(lastVolumeRefresh) > 2 else { return }
+        refreshDirectoryURLs()
     }
 
     override func menu(for menuKind: FIMenuKind) -> NSMenu {
+        // Cheap check first: a drive mounted since the last refresh must show
+        // up in this menu, not the next one.
+        refreshDirectoryURLsIfStale()
+
         let menu = NSMenu(title: "")
         switch menuKind {
         case .contextualMenuForItems,
