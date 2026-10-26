@@ -1,0 +1,1 @@
+The Finder menu now works on external volumes: external drives, USB sticks, SD cards, disk images and network shares, not just the startup disk. Drives mounted or ejected while pathcop is running are picked up live, no relaunch needed.

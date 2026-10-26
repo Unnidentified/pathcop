@@ -3,13 +3,15 @@
 Adds four menus when right-clicking: **Copy Path**, **Copy Tree**, **Copy Contents** and **Copy Filename** <br>
 Works on all files, folders, and desktop. Multi-selection is also supported.
 
+Works on your startup disk **and every external volume** — external drives, USB sticks, SD cards and mounted disk images get the same menu.
+
 Minimum requirements (for latest versions): <br>
--pathcop-1.2-arm64.dmg (1.1M, arm64, macOS 11.0+) <br>
--pathcop-1.2-intel.dmg (1.16M, x86_64, macOS 11.0+)
+-pathcop-1.3-arm64.dmg (735K, arm64, macOS 11.0+) <br>
+-pathcop-1.3-intel.dmg (739K, x86_64, macOS 11.0+)
 
 ### Installation
 
-1. [download the arm64 DMG installer for pathcop](https://github.com/Unnidentified/pathcop/releases/download/1.2/pathcop-1.2-arm64.dmg) / [download the intel DMG installer](https://github.com/Unnidentified/pathcop/releases/download/1.2/pathcop-1.2-intel.dmg)
+1. [download the arm64 DMG installer for pathcop](https://github.com/Unnidentified/pathcop/releases/download/1.3/pathcop-1.3-arm64.dmg) / [download the intel DMG installer](https://github.com/Unnidentified/pathcop/releases/download/1.3/pathcop-1.3-intel.dmg)
 2. drag `pathcop.app` to `/Applications`
 3. run `"xattr -cr /Applications/pathcop.app"` in `terminal.app`, (I don't pay apple 100 bucks a year)
 5. launch it for the first time
@@ -21,3 +23,17 @@ Minimum requirements (for latest versions): <br>
 That's it! Happy frenetic-right-clicking-anything-and-copying-lotsofpaths.
 
 > wait, wut?
+
+### Changelog
+
+**1.3**
+- The Finder menu now appears inside external volumes (external drives, USB sticks, SD cards, disk images, network shares), not just the startup disk. Plugging a drive in or out updates it live, no relaunch needed.
+
+**1.2**
+- Added **Copy Contents** and **Copy Filename**.
+
+**1.1**
+- Split arm64 / intel builds, macOS 11.0 floor.
+
+**1.0**
+- First release.
