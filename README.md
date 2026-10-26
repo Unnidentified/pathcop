@@ -1,9 +1,7 @@
 # <img src="icon.png" width="85" height="85" align="absmiddle" alt="pathcop icon" /> pathcop
 
 Adds four menus when right-clicking: **Copy Path**, **Copy Tree**, **Copy Contents** and **Copy Filename** <br>
-Works on all files, folders, and desktop. Multi-selection is also supported.
-
-Works on your startup disk **and every external volume** — external drives, USB sticks, SD cards and mounted disk images get the same menu.
+Works on all files, folders, and desktop (+external devices). Multi-selection is also supported.
 
 Minimum requirements (for latest versions): <br>
 -pathcop-1.3-arm64.dmg (735K, arm64, macOS 11.0+) <br>
